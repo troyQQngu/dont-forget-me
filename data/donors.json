@@ -69,6 +69,42 @@
     ]
   },
   {
+    "name": "Elena Morales",
+    "giving_capacity": "mid",
+    "interests": [
+      "STEM education",
+      "scholarships",
+      "women in tech"
+    ],
+    "preferred_contact": "coffee",
+    "primary_city": "Los Angeles, CA",
+    "time_zone": "America/Los_Angeles",
+    "engagement_stage": "cultivation",
+    "last_gift_date": "2023-06-20",
+    "last_gift_amount": 5000,
+    "interactions": [
+      {
+        "date": "2024-01-25",
+        "type": "email",
+        "notes": "Shared excitement about LA alumni mentoring circles and asked for more student success stories."
+      },
+      {
+        "date": "2023-10-14",
+        "type": "event",
+        "notes": "Attended LA founders breakfast; connected with robotics scholarship recipients."
+      }
+    ],
+    "notes": "Elena leads engineering partnerships at a local tech firm and champions scholarships for first-generation students. She splits time between Downtown LA and Pasadena co-working hubs and loves impromptu coffee chats near arts districts. She offered to host a spring mentoring salon if we can provide fresh success stories and an introduction to our robotics faculty lead.",
+    "strategic_objectives": [
+      "Deliver two new LA student success stories by 2024-04-03",
+      "Confirm robotics faculty availability for Elena's mentoring salon"
+    ],
+    "open_questions": [
+      "Which week in April works best for Elena's mentoring salon?",
+      "Does Elena prefer alumni or student speakers for the salon agenda?"
+    ]
+  },
+  {
     "name": "Cara Lee",
     "giving_capacity": "prospect",
     "interests": [

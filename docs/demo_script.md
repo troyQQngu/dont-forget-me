@@ -14,7 +14,8 @@ by the stub LLM.
    weekly schedule.
 2. **Highlight the assets** – Point to:
    * `data/donors.json` for long-form relationship history (open it in your
-     editor to show Alicia Gomez's mentorship commitments and wine expertise).
+     editor to show Alicia Gomez's mentorship commitments and wine expertise,
+     plus Elena Morales's LA-based mentoring ambitions).
    * `data/schedule.json` for the upcoming week of meetings.
    * `examples/offline_manual_demo.py` as the interactive rehearsal tool.
 3. **Mention configuration** – Note that a live demo only needs an
@@ -116,8 +117,9 @@ by the stub LLM.
    ```
 
    Narrate the new "Schedule Los Angeles touchpoint" entries and tie each back to
-   donor primary cities or travel notes. Point out how one of the low-priority
-   admin blocks disappears to make space for the location-focused outreach.
+   donor primary cities or travel notes—Alicia's pledge prep and Elena's mentoring
+   salon both earn slots. Point out how one of the low-priority admin blocks
+   disappears to make space for the location-focused outreach.
 
 4. **Surface dormant relationships** – Add another directive and refresh the
    list:
