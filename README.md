@@ -59,6 +59,15 @@ The script loads the sample data in `data/`, prompts you to add directives or ap
 * Generating meeting strategies that echo the same context, all without calling a live language model.
 
 
+## Detailed demo process
+
+If you are preparing a stakeholder walkthrough, follow the scripted flow in
+[`docs/demo_script.md`](docs/demo_script.md). It covers both an online demo with a
+live LLM and a fully offline rehearsal, including when to switch datasets,
+which CLI invocations to run, and how to narrate the assistant's reasoning at
+each step.
+
+
 ## Development
 
 The project targets Python 3.10 or newer. The runtime requires the [`openai`](https://pypi.org/project/openai/) package and a valid API key when you want to reach the hosted model. During development it can be helpful to create a virtual environment and point `PYTHONPATH` at the `src` directory. To run the automated checks locally:
