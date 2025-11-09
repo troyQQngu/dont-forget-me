@@ -30,6 +30,16 @@ PYTHONPATH=src python -m npo_assistant.cli data plan "Alicia Gomez" --date 2024-
 
 Use `--model` to select a different OpenAI chat model if desired. The commands output JSON describing the suggested to-do list or meeting plan. You can pipe the results to other tools or transform them into a UI of your choice.
 
+### Offline manual experiment
+
+If you want to experiment without API access, run the bundled example script that injects a stubbed LLM response:
+
+```
+PYTHONPATH=src python examples/offline_manual_demo.py
+```
+
+The script uses the sample data in `data/`, calls the same planning helpers as the CLI, and prints deterministic JSON so you can confirm the workflows end-to-end without a network connection or API key.
+
 ## Development
 
 The project targets Python 3.10 or newer. The runtime requires the [`openai`](https://pypi.org/project/openai/) package and a valid API key when you want to reach the hosted model. During development it can be helpful to create a virtual environment and point `PYTHONPATH` at the `src` directory. To run the automated checks locally:
