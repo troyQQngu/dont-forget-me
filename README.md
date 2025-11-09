@@ -29,6 +29,20 @@ PYTHONPATH=src python -m npo_assistant.cli data plan "Alicia Gomez" --date 2024-
 
 The commands output JSON describing the suggested to-do list or meeting plan. You can pipe the results to other tools or transform them into a UI of your choice.
 
+## Development
+
+The project targets Python 3.10 or newer and has no third-party dependencies. During development it can be helpful to
+create a virtual environment and point `PYTHONPATH` at the `src` directory. To run the automated checks locally:
+
+```
+python -m venv .venv
+source .venv/bin/activate
+PYTHONPATH=src pytest
+```
+
+The test suite exercises the heuristic planning routines and the CLI entry point to ensure the example workflows continue
+to operate after changes.
+
 ## Extending the assistant
 
 The heuristics in `ai.py` are designed to be easy to replace with a real large language model call. The module exposes two functions—`generate_daily_todo` and `plan_meeting`—that can be swapped to use an API client instead of the built-in rules.
