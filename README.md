@@ -22,7 +22,7 @@ data/
 
 ## Usage
 
-Create or update the `data/donors.json` and `data/schedule.json` files to match your organization. The sample data illustrates long-form relationship notes that contain commitments ("deliver the mentorship checklist items A/B/C"), personal context, location hints, and open questions. The model leans on this context when generating suggestions.
+Create or update the `data/donors.json` and `data/schedule.json` files to match your organization. The sample data illustrates long-form relationship notes that contain commitments ("complete mentor background checks, finalize the matching roster, and publish the progress dashboard"), personal context, location hints, and open questions. The model leans on this context when generating suggestions.
 
 Set the `OPENAI_API_KEY` environment variable (or pass `--api-key` to the CLI), then run:
 
@@ -32,7 +32,7 @@ PYTHONPATH=src python -m npo_assistant.cli data todo --date 2024-03-25 \
   --directive "Flag anyone I should pause because conversations are stalling"
 
 PYTHONPATH=src python -m npo_assistant.cli data plan "Alicia Gomez" --date 2024-03-25 \
-  --objective "Confirm that the mentorship checklist items A/B/C are ready" \
+  --objective "Confirm that the mentorship deliverables (background checks, roster, dashboard) are ready" \
   --objective "Identify a thoughtful wine-related touch that isn't a bottle"
 
 PYTHONPATH=src python -m npo_assistant.cli data reflect "Alicia Gomez" \
@@ -51,11 +51,13 @@ If you want to experiment without API access, run the bundled example script tha
 PYTHONPATH=src python examples/offline_manual_demo.py
 ```
 
-The script uses the sample data in `data/`, calls the same planning helpers as the CLI, and prints deterministic JSON so you can confirm the workflows end-to-end without a network connection or API key. It demonstrates:
+The script loads the sample data in `data/`, prompts you to add directives or append new notes, and prints deterministic JSON so you can rehearse the workflows end-to-end without a network connection or API key. It demonstrates:
 
-* A daily to-do list that clearly cites donor notes and your directives (e.g., focus on Los Angeles prospects).
-* A meeting plan that references commitments buried inside the donor notes, such as delivering checklist items before a pledged gift is released.
-* An interactive reflection that reminds you to follow up on missed questions right after the meeting.
+* Updating Alicia's notes with the pledged deliverables (background checks, matching roster, progress dashboard) and seeing those tasks immediately prioritized in the to-do list.
+* Tailoring the daily plan with directives—focus on Los Angeles donors, surface people you haven't spoken with in a while, or flag prospects to disqualify—and receiving reasoning tied directly to donor data.
+* Logging meeting recaps that mention forgotten questions so the assistant reminds you to follow up on critical gaps right away.
+* Generating meeting strategies that echo the same context, all without calling a live language model.
+
 
 ## Development
 
