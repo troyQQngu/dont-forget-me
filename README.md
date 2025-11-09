@@ -53,9 +53,10 @@ PYTHONPATH=src python examples/offline_manual_demo.py
 
 The script restores `data/donors.json` to a baseline state (with Alicia's $100k pledge note removed), prints the default to-do list, and then waits for free-form commands. Edit the JSON just as you would for the live system—append notes in your editor, save, return to the prompt, and run `todo` to see how the recommendations change. A few highlights:
 
+* The baseline `todo` output shows a packed day pulled from `schedule.json`. Point out which admin items (like the newsletter or finance reconciliation) are marked as low priority so the audience sees them fall away when higher-impact tasks appear.
 * After you add Alicia's pledge reminder manually, the next `todo` run surfaces the mentorship deliverables (background checks, matching roster, progress dashboard) with grounded reasoning.
-* Use `directives add …` to layer location filters, dormant-relationship nudges, or disqualification criteria before regenerating the plan—each recommendation cites the donor data that triggered it.
-* `event Meet Alicia at Gala 2025` produces an event-specific meeting plan, while `reflect Alicia Gomez` analyzes your recap for missed questions and urgent follow-ups.
+* Layer directives with `directives add …` to steer the assistant: focus on LA visits, then "haven't talked in a while" reconnect cues, and finally disqualification prompts. As you stack them, call out how optional admin work disappears to make room for the new relationship-driving tasks.
+* `event Meet Alicia at Gala 2025` produces an event-specific meeting plan, while `reflect Alicia Gomez` prints bulleted follow-up reminders rooted in the recap.
 * Because the script reloads from disk for every command, any manual edit to `data/` is reflected immediately, making the rehearsal feel identical to a live LLM session.
 
 

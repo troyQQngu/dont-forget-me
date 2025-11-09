@@ -1,5 +1,11 @@
 [
   {
+    "start": "2024-03-25T08:00:00",
+    "end": "2024-03-25T08:45:00",
+    "title": "Review overnight board updates",
+    "notes": "Skim weekend board messages and flag anything that needs a donor-facing response."
+  },
+  {
     "start": "2024-03-25T09:00:00",
     "end": "2024-03-25T09:45:00",
     "title": "Coffee briefing with Alicia Gomez",
@@ -8,12 +14,42 @@
     "notes": "Review mentorship pilot checklist drafts before meeting."
   },
   {
-    "start": "2024-03-25T12:00:00",
-    "end": "2024-03-25T12:30:00",
+    "start": "2024-03-25T10:15:00",
+    "end": "2024-03-25T11:00:00",
+    "title": "Program team sync",
+    "notes": "Gather updates needed for donor follow-ups and coordinate volunteer onboarding."
+  },
+  {
+    "start": "2024-03-25T11:30:00",
+    "end": "2024-03-25T12:15:00",
+    "title": "Lunch check-in with volunteer captains",
+    "notes": "Discuss mentorship pilot staffing; optional if donor prep becomes urgent."
+  },
+  {
+    "start": "2024-03-25T12:30:00",
+    "end": "2024-03-25T13:15:00",
+    "title": "Draft quarterly stewardship newsletter",
+    "notes": "Outline donor impact stories; can move to tomorrow if high-priority outreach emerges."
+  },
+  {
+    "start": "2024-03-25T14:00:00",
+    "end": "2024-03-25T14:30:00",
     "title": "Call with Cara Lee",
     "donor": "Cara Lee",
     "location": "Zoom",
     "notes": "Confirm intro to program director and Pasadena partnership metrics."
+  },
+  {
+    "start": "2024-03-25T15:30:00",
+    "end": "2024-03-25T16:15:00",
+    "title": "Finance reconciliation",
+    "notes": "Finalize expense report draft; low priority compared to donor deliverables."
+  },
+  {
+    "start": "2024-03-25T16:30:00",
+    "end": "2024-03-25T17:15:00",
+    "title": "Prospect research backlog",
+    "notes": "Review new inbound prospects; can be deferred if outreach tasks pile up."
   },
   {
     "start": "2024-03-26T10:00:00",

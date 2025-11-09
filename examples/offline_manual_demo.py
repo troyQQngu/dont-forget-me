@@ -31,32 +31,54 @@ class DemoStubLLM:
             return json.dumps(self._meeting_reflection(payload))
         raise ValueError(f"Unsupported request type: {request}")
 
-    # pylint: disable=too-many-locals, too-many-branches
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _daily_todo(self, payload: dict) -> dict:
         donors = payload["donors"]
         schedule = payload.get("schedule", [])
         directives = [item.lower() for item in payload.get("directives", [])]
         today = datetime.fromisoformat(payload["date"]).date()
 
-        slot_order = ["08:00", "09:30", "10:45", "12:15", "14:00", "15:30", "16:45", "17:30"]
+        slot_order = [
+            "08:00",
+            "08:45",
+            "09:30",
+            "10:45",
+            "12:15",
+            "13:00",
+            "14:30",
+            "16:00",
+        ]
+        max_tasks = 6
         tasks: list[dict] = []
         added_tasks: set[str] = set()
+        order = 0
 
-        def add_task(task: str, reason: str, related: list[str]) -> None:
+        def add_task(
+            task: str,
+            reason: str,
+            related: list[str],
+            *,
+            priority: int,
+            default_time: str | None = None,
+        ) -> None:
+            nonlocal order
             if task in added_tasks:
                 return
-            index = min(len(tasks), len(slot_order) - 1)
             tasks.append(
                 {
                     "task": task,
-                    "time": slot_order[index],
+                    "time": default_time,
                     "reason": reason,
                     "related_donors": related,
+                    "_priority": priority,
+                    "_order": order,
                 }
             )
             added_tasks.add(task)
+            order += 1
 
         donors_by_name = {donor["name"]: donor for donor in donors}
+
         def has_phrase(phrases: tuple[str, ...]) -> bool:
             return any(any(phrase in directive for phrase in phrases) for directive in directives)
 
@@ -81,7 +103,6 @@ class DemoStubLLM:
             )
         )
 
-        # Always elevate Alicia's pledged deliverables when present in the notes.
         alicia = donors_by_name.get("Alicia Gomez")
         if alicia and "mentor background checks" in alicia.get("notes", "").lower():
             add_task(
@@ -91,6 +112,7 @@ class DemoStubLLM:
                     "Finish the clearance paperwork and confirm every mentor is approved."
                 ),
                 ["Alicia Gomez"],
+                priority=0,
             )
             add_task(
                 "Finalize the mentor-mentee matching roster",
@@ -99,6 +121,7 @@ class DemoStubLLM:
                     "Tighten the roster and flag any gaps in STEM representation."
                 ),
                 ["Alicia Gomez"],
+                priority=0,
             )
             add_task(
                 "Publish the mentorship progress dashboard",
@@ -107,9 +130,9 @@ class DemoStubLLM:
                     "clear by next week."
                 ),
                 ["Alicia Gomez"],
+                priority=0,
             )
 
-        # Tie in scheduled meetings for the day.
         for entry in schedule:
             start = datetime.fromisoformat(entry["start"]).date()
             if start != today:
@@ -123,12 +146,26 @@ class DemoStubLLM:
                     f"Prep for {entry['title']} at {entry.get('location', 'the scheduled venue')}. "
                     f"Use the agenda notes: {entry.get('notes', 'Review donor priorities.')}"
                 )
-                add_task(f"Prep briefing for {donor_name}", reason, [donor_name])
+                add_task(
+                    f"Prep briefing for {donor_name}",
+                    reason,
+                    [donor_name],
+                    priority=1,
+                    default_time=datetime.fromisoformat(entry["start"]).strftime("%H:%M"),
+                )
             else:
+                lower_notes = entry.get("notes", "").lower()
+                optional = any(
+                    phrase in lower_notes
+                    for phrase in ("optional", "can move", "low priority", "deferred")
+                )
+                base_priority = 4 if optional else 2
                 add_task(
                     f"Prepare for {entry['title']}",
                     "Gather the required program updates so every donor follow-up stays accurate.",
                     [],
+                    priority=base_priority,
+                    default_time=datetime.fromisoformat(entry["start"]).strftime("%H:%M"),
                 )
 
         def last_interaction_days(donor: dict) -> int | None:
@@ -144,6 +181,14 @@ class DemoStubLLM:
             return (today - latest).days
 
         if la_focus:
+            original_directive = next(
+                (
+                    text
+                    for text in payload.get("directives", [])
+                    if "los angeles" in text.lower() or " in la" in text.lower()
+                ),
+                "Prioritize time in Los Angeles",
+            )
             la_donors = [
                 donor
                 for donor in donors
@@ -155,32 +200,46 @@ class DemoStubLLM:
                 add_task(
                     f"Schedule Los Angeles touchpoint with {donor['name']}",
                     (
-                        f"Directive: prioritize LA meetings. {donor['name']} can meet locally, so coordinate a coffee or site "
+                        f"Directive: {original_directive}. {donor['name']} can meet locally, so coordinate a coffee or site "
                         "visit while you're in town."
                     ),
                     [donor["name"]],
+                    priority=2,
                 )
 
         if reconnect_focus:
+            reconnect_directive = next(
+                (
+                    text
+                    for text in payload.get("directives", [])
+                    if any(
+                        phrase in text.lower()
+                        for phrase in ("haven't talked", "havent talked", "revive", "reconnect")
+                    )
+                ),
+                "Re-engage dormant supporters",
+            )
             for donor in donors:
                 gap = last_interaction_days(donor)
                 if gap is not None and gap > 60:
                     add_task(
                         f"Reconnect with {donor['name']}",
                         (
-                            f"It's been {gap} days since the last touchpoint with {donor['name']}. Send a tailored update to "
-                            "restart the conversation."
+                            f"Directive: {reconnect_directive}. It's been {gap} days since the last touchpoint with {donor['name']}. "
+                            "Send a tailored update to restart the conversation."
                         ),
                         [donor["name"]],
+                        priority=2,
                     )
                 if gap is None:
                     add_task(
                         f"Introduce yourself to {donor['name']}",
                         (
-                            "You haven't logged a first conversation yet. Send a warm introduction so they know you're the "
-                            f"point of contact for {donor['name']}."
+                            f"Directive: {reconnect_directive}. You haven't logged a first conversation yet. Send a warm "
+                            f"introduction so {donor['name']} knows you're the point of contact."
                         ),
                         [donor["name"]],
+                        priority=2,
                     )
 
         if disqualify_focus:
@@ -206,18 +265,33 @@ class DemoStubLLM:
                     )
                 else:
                     reason = (
-                        f"{donor['name']} remains in qualification without momentum. Decide if they should be paused so you can "
-                        "refocus on stronger prospects."
+                        f"{donor['name']} remains in qualification without momentum. Decide if they should be paused so you can"
+                        " refocus on stronger prospects."
                     )
-                add_task(f"Pause outreach to {donor['name']}", reason, [donor["name"]])
+                add_task(
+                    f"Pause outreach to {donor['name']}",
+                    reason,
+                    [donor["name"]],
+                    priority=3,
+                )
 
         if not tasks:
             add_task(
                 "Review donor database",
                 "No directives matched specific actions today—scan the database for emerging opportunities.",
                 [],
+                priority=5,
             )
-        return {"tasks": tasks}
+
+        sorted_tasks = sorted(tasks, key=lambda item: (item["_priority"], item["_order"]))[:max_tasks]
+        used_times = {item["time"] for item in sorted_tasks if item.get("time")}
+        slot_iter = (slot for slot in slot_order if slot not in used_times)
+        for item in sorted_tasks:
+            if not item.get("time"):
+                item["time"] = next(slot_iter, slot_order[-1])
+            item.pop("_priority", None)
+            item.pop("_order", None)
+        return {"tasks": sorted_tasks}
 
     def _meeting_plan(self, payload: dict) -> dict:
         donor = payload["donor"]
@@ -284,15 +358,15 @@ class DemoStubLLM:
         deliverables = [
             (
                 "mentor background checks",
-                "Finalize and send the cleared mentor background checks so Alicia knows the program is ready."
+                "Send Alicia the cleared mentor background check summary."
             ),
             (
                 "matching roster",
-                "Share the complete mentor-mentee roster and highlight STEM pairings to honor her pledge conditions."
+                "Share the final mentor-mentee roster highlighting the STEM pairings."
             ),
             (
                 "progress dashboard",
-                "Publish the mentorship progress dashboard and include it in your follow-up email."
+                "Deliver the mentorship progress dashboard update in your follow-up email."
             ),
         ]
 
@@ -300,7 +374,7 @@ class DemoStubLLM:
             if keyword not in notes_lower:
                 follow_ups.append(action)
                 missed_opportunities.append(
-                    f"Still need to confirm the {keyword} tied to Alicia's $100k pledge."
+                    f"Confirm the {keyword} Alicia tied to her $100k pledge."
                 )
 
         for question in donor.get("open_questions", []):
@@ -321,9 +395,9 @@ class DemoStubLLM:
 
         return {
             "missed_opportunities": missed_opportunities
-            or ["No major gaps detected, but reinforce commitments in your recap."],
+            or ["No major gaps detected—reinforce commitments in your recap."],
             "follow_up_actions": follow_ups
-            or ["Send a thank-you email reiterating next steps within 24 hours."],
+            or ["Send a thank-you note that reiterates agreed next steps."],
             "suggested_questions": suggested_questions,
             "updated_timeline": (
                 f"Complete these follow-ups within {horizon} days so Alicia's pledge stays on track."

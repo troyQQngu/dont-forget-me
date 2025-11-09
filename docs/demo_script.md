@@ -91,7 +91,9 @@ by the stub LLM.
    The tool restores `data/donors.json` to the baseline dataset (with Alicia's
    pledge reminder removed) and immediately prints the current to-do list. Use
    this first output to describe the "default" priorities before any fresh
-   context is added.
+   context is added—it's a packed schedule that includes lower-impact admin
+   items (newsletter draft, finance reconciliation). Mention that those tasks
+   will fall away once directives introduce higher-priority outreach.
 
 2. **Append the pledge reminder manually** – Open `data/donors.json` in your
    editor, find Alicia Gomez’s `notes`, and paste the following sentence at the
@@ -114,7 +116,8 @@ by the stub LLM.
    ```
 
    Narrate the new "Schedule Los Angeles touchpoint" entries and tie each back to
-   donor primary cities or travel notes.
+   donor primary cities or travel notes. Point out how one of the low-priority
+   admin blocks disappears to make space for the location-focused outreach.
 
 4. **Surface dormant relationships** – Add another directive and refresh the
    list:
@@ -125,7 +128,8 @@ by the stub LLM.
    ```
 
    Call out how the assistant cites the number of days since each donor’s last
-   interaction to justify the catch-up suggestions.
+   interaction to justify the catch-up suggestions, and note that another
+   optional admin task was dropped so the reconnection can take precedence.
 
 5. **Identify prospects to pause** – Layer the disqualification directive and
    regenerate:
@@ -157,8 +161,8 @@ by the stub LLM.
    When prompted, paste notes that admit you forgot to confirm the mentorship
    deliverables and skipped a question about her daughter's robotics team. After
    submitting optional "missed questions," walk through the bulleted guidance
-   that reminds you to deliver the checklist items immediately and revisit the
-   unanswered relationship-building prompts.
+   that now summarizes missed commitments, next steps, and follow-up questions in
+   plain language.
 
 8. Mention that additional helpers are available:
    * `directives list` shows the active context filters.
