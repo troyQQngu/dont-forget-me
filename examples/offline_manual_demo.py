@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 from datetime import date, datetime
 from pathlib import Path
 from textwrap import dedent
@@ -82,7 +83,7 @@ class DemoStubLLM:
             add_task(
                 "Publish the mentorship progress dashboard",
                 (
-                    "Without the updated dashboard Alicia can't verify impact. Ship the metrics summary so the pledge can clear "
+                    "Without the updated dashboard Alicia can't verify impact. Ship the metrics summary so the pledge can clear"
                     "by next week."
                 ),
                 ["Alicia Gomez"],
@@ -152,7 +153,7 @@ class DemoStubLLM:
                     add_task(
                         f"Introduce yourself to {donor['name']}",
                         (
-                            "Directive: find contacts you haven't spoken with yet. There's no prior interaction logged, so send "
+                            "Directive: find contacts you haven't spoken with yet. There's no prior interaction logged, so send"
                             f"a welcome message to {donor['name']}."
                         ),
                         [donor["name"]],
@@ -298,82 +299,107 @@ class DemoState:
         "she will donate 100,000 dollars by the following week."
     )
 
-    PLEDGE_REMINDER = (
-        "She said if I can finalize the mentor background checks, confirm the mentor-mentee matching roster, and send "
-        "her the updated mentorship progress dashboard by next week, then she will donate 100,000 dollars."
+    PLEDGE_REPLACEMENT = (
+        "She is considering a major spring pledge and wants proof the mentorship pilot is truly launch-ready."
     )
 
     def __init__(self, data_dir: Path) -> None:
         self.data_dir = data_dir
+        self.donors_path = self.data_dir / "donors.json"
+        self.schedule_path = self.data_dir / "schedule.json"
         self.llm = DemoStubLLM()
         self.directives: list[str] = []
-        self.donors = []
-        self.schedule = []
-        self.reset()
+        self._baseline_donors_payload = self._load_baseline_donors()
+        self._baseline_schedule_payload = self._load_json(self.schedule_path)
+
+    def _load_json(self, path: Path):
+        with path.open("r", encoding="utf-8") as handle:
+            return json.load(handle)
+
+    def _write_json(self, path: Path, payload) -> None:
+        with path.open("w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2)
+            handle.write("\n")
+
+    def _load_baseline_donors(self):
+        payload = self._load_json(self.donors_path)
+        for entry in payload:
+            notes = entry.get("notes", "")
+            if self.PLEDGE_SNIPPET in notes:
+                entry["notes"] = notes.replace(self.PLEDGE_SNIPPET, self.PLEDGE_REPLACEMENT)
+        return payload
 
     def reset(self) -> None:
-        """Reload data and remove Alicia's pledge snippet to show the baseline state."""
+        """Restore the sample data to the baseline state without Alicia's pledge reminder."""
 
-        self.donors = load_donors(self.data_dir / "donors.json")
-        self.schedule = load_schedule(self.data_dir / "schedule.json")
+        self._write_json(self.donors_path, self._baseline_donors_payload)
+        self._write_json(self.schedule_path, self._baseline_schedule_payload)
+        self.directives.clear()
         self.llm = DemoStubLLM()
-        self.directives = []
-        self._strip_alicia_pledge()
-        print("Reset demo state to the baseline dataset.")
+        print(
+            "Reset donors.json and schedule.json to their baseline versions. "
+            "Alicia's pledge reminder has been removed so you can add it manually during the demo."
+        )
 
-    def _strip_alicia_pledge(self) -> None:
-        alicia = find_donor(self.donors, "Alicia Gomez")
-        if not alicia:
-            return
-        if self.PLEDGE_SNIPPET in alicia.notes:
-            alicia.notes = alicia.notes.replace(
-                self.PLEDGE_SNIPPET,
-                (
-                    "She is considering a major spring pledge and wants proof the mentorship pilot is truly launch-ready."
-                ),
-            )
+    def _load_current_donors(self):
+        return load_donors(self.donors_path)
+
+    def _load_current_schedule(self):
+        return load_schedule(self.schedule_path)
 
     def add_directive(self, directive: str) -> None:
-        if directive:
-            if directive in self.directives:
-                print(f"Directive already active: {directive}")
-                return
-            self.directives.append(directive)
-            print(f"Added directive: {directive}")
+        directive = directive.strip()
+        if not directive:
+            print("Cannot add an empty directive.")
+            return
+        if directive in self.directives:
+            print(f"Directive already active: {directive}")
+            return
+        self.directives.append(directive)
+        print(f"Added directive: {directive}")
+
+    def remove_directive(self, directive: str) -> None:
+        try:
+            self.directives.remove(directive)
+            print(f"Removed directive: {directive}")
+        except ValueError:
+            print(f"Directive not found: {directive}")
+
+    def list_directives(self) -> None:
+        if not self.directives:
+            print("No active directives.")
+            return
+        print("Active directives:")
+        for directive in self.directives:
+            print(f"- {directive}")
 
     def clear_directives(self) -> None:
         self.directives.clear()
         print("Cleared all directives.")
 
-    def append_note(self, donor_name: str, note: str) -> None:
-        donor = find_donor(self.donors, donor_name)
-        if not donor:
-            print(f"Could not find donor named '{donor_name}'.")
-            return
-        if donor.notes and not donor.notes.endswith(" "):
-            donor.notes += " "
-        donor.notes += note.strip()
-        print(f"Updated notes for {donor.name}.")
-
-    def add_alicia_pledge(self) -> None:
-        self.append_note("Alicia Gomez", self.PLEDGE_REMINDER)
-
     def generate_todo(self) -> None:
+        donors = self._load_current_donors()
+        schedule = self._load_current_schedule()
         tasks = generate_daily_todo(
-            self.donors,
-            self.schedule,
+            donors,
+            schedule,
             today=date(2024, 3, 25),
             directives=self.directives,
             llm=self.llm,
         )
+        if self.directives:
+            print("\nCurrent directives driving this list:")
+            for directive in self.directives:
+                print(f"- {directive}")
         print("\nSuggested to-do list:\n")
         for idx, task in enumerate(tasks, start=1):
-            donors = ", ".join(task.get("related_donors", [])) or "general"
-            print(f"{idx}. [{task['time']}] {task['task']} ({donors})")
+            donors_text = ", ".join(task.get("related_donors", [])) or "general"
+            print(f"{idx}. [{task['time']}] {task['task']} ({donors_text})")
             print(f"   → {task['reason']}\n")
 
-    def plan_meeting(self, donor_name: str, event: str | None = None) -> None:
-        donor = find_donor(self.donors, donor_name)
+    def plan_meeting_for_donor(self, donor_name: str, event: str | None = None) -> None:
+        donors = self._load_current_donors()
+        donor = find_donor(donors, donor_name)
         if not donor:
             print(f"Could not find donor named '{donor_name}'.")
             return
@@ -388,18 +414,21 @@ class DemoState:
         print(json.dumps(plan, indent=2))
 
     def plan_by_event(self, description: str) -> None:
+        description = description.strip()
         if not description:
             print("Please provide an event description (e.g., 'Meet Alicia at Gala 2025').")
             return
+        donors = self._load_current_donors()
         lowered = description.lower()
-        donor = next((d for d in self.donors if d.name.lower() in lowered), None)
+        donor = next((d for d in donors if d.name.lower() in lowered), None)
         if not donor:
             print("Could not infer a donor from that event description. Try including their full name.")
             return
-        self.plan_meeting(donor.name, event=description)
+        self.plan_meeting_for_donor(donor.name, event=description)
 
     def reflect_on_meeting(self, donor_name: str, meeting_notes: str, missed: list[str]) -> None:
-        donor = find_donor(self.donors, donor_name)
+        donors = self._load_current_donors()
+        donor = find_donor(donors, donor_name)
         if not donor:
             print(f"Could not find donor named '{donor_name}'.")
             return
@@ -414,20 +443,49 @@ class DemoState:
         print(json.dumps(summary, indent=2))
 
     def show_donors(self) -> None:
+        donors = self._load_current_donors()
         print("\nCurrent donor snapshots:\n")
-        for donor in self.donors:
+        for donor in donors:
             latest_interaction = donor.interactions[-1].date.isoformat() if donor.interactions else "No interactions yet"
             print(f"- {donor.name} ({donor.primary_city or 'Unknown city'})")
             print(f"  Last interaction: {latest_interaction}")
             print(f"  Notes: {donor.notes}\n")
 
-    def show_directives(self) -> None:
-        if not self.directives:
-            print("No active directives.")
-            return
-        print("Active directives:")
-        for directive in self.directives:
-            print(f"- {directive}")
+
+def _print_help() -> None:
+    print(
+        dedent(
+            """
+            Commands:
+              reset                       → Restore donors.json to the baseline state (removes Alicia's pledge note).
+              todo                        → Reload data from disk and generate the current to-do list.
+              directives add <text>       → Add a directive that will influence the next to-do list.
+              directives remove <text>    → Remove a previously added directive.
+              directives list             → Show the active directives.
+              directives clear            → Remove all directives.
+              donors                      → Print the current donor notes to verify edits.
+              plan <donor name>           → Generate a meeting strategy for the donor.
+              event <description>         → Generate a meeting strategy inferred from an event description.
+              reflect <donor name>        → Summarize follow-ups after a meeting (you'll be prompted for notes).
+              help                        → Show this help message.
+              quit                        → Exit the demo.
+            """
+        )
+    )
+
+
+def _prompt_multiline(prompt: str) -> str:
+    print(prompt)
+    lines: list[str] = []
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        if not line.strip():
+            break
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def main() -> None:
@@ -440,89 +498,91 @@ def main() -> None:
             Welcome to the offline interactive demo! This walkthrough uses a deterministic stub instead of a live LLM so you
             can still showcase how the assistant grounds recommendations in donor notes, directives, and meeting recaps.
 
-            The menu is organized to mirror the final presentation:
-              • Option [1] resets to the baseline dataset (with Alicia's pledge note removed) and immediately shows the default
-                to-do list.
-              • Option [2] appends the $100k pledge reminder to Alicia's notes, enabling the assistant to surface the new
-                deliverables on the next to-do run.
-              • Options [3], [4], and [5] add the LA, catch-up, and disqualify directives one by one so you can regenerate the
-                list after each change.
-              • Option [7] lets you plan a donor interaction by typing an event description such as "Meet Alicia at Gala 2025".
-              • Option [8] records meeting notes so the assistant can flag missed questions and urgent follow-ups.
+            The script mirrors the real workflow: edit the JSON data just as you would in production, then regenerate
+            suggestions. Launching the demo restores the baseline dataset so Alicia's $100k pledge reminder is absent—you'll
+            add it manually in step two of the walkthrough.
 
-            Type the menu number (or keyword) to trigger an action. Enter "quit" to exit.
+            Tip: keep your editor open on data/donors.json so you can paste new notes between commands.
+            Type "help" at any time to see the available commands.
             """
         )
     )
 
+    state.reset()
+    print("\nBaseline to-do list (before making any edits):")
+    state.generate_todo()
+
     while True:
-        print(
-            "\nMenu:\n"
-            "  [1] Reset & show baseline to-do list\n"
-            "  [2] Append Alicia's $100k pledge note\n"
-            "  [3] Add directive: 'I am in LA right now...'\n"
-            "  [4] Add directive: 'Find someone I haven't talked to for a while...'\n"
-            "  [5] Add directive: 'Find someone I have been talking to for too long...'\n"
-            "  [6] Generate to-do list with current context\n"
-            "  [7] Plan meeting by event description\n"
-            "  [8] Reflect on meeting notes\n"
-            "  [9] Show donor snapshots\n"
-            "  [10] Show active directives\n"
-            "  [11] Clear directives\n"
-            "  [12] Append custom note to donor\n"
-            "  [quit] Exit\n"
-        )
-        choice = input("Select an option: ").strip().lower()
-        if choice in {"quit", "q", "exit"}:
+        try:
+            raw = input("\nassistant> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            break
+        if not raw:
+            continue
+        lowered = raw.lower()
+        if lowered in {"quit", "exit"}:
             print("Goodbye!")
             break
-        if choice in {"1", "reset"}:
+        if lowered in {"help", "?"}:
+            _print_help()
+            continue
+        tokens = shlex.split(raw)
+        if not tokens:
+            continue
+        command = tokens[0].lower()
+        args = tokens[1:]
+
+        if command == "reset":
             state.reset()
+            continue
+        if command == "todo":
             state.generate_todo()
             continue
-        if choice in {"2", "pledge"}:
-            state.add_alicia_pledge()
+        if command == "directives":
+            if not args:
+                print("Usage: directives <add|remove|list|clear> [text]")
+                continue
+            subcommand = args[0].lower()
+            remainder = " ".join(args[1:])
+            if subcommand == "add":
+                state.add_directive(remainder)
+            elif subcommand == "remove":
+                state.remove_directive(remainder)
+            elif subcommand in {"list", "show"}:
+                state.list_directives()
+            elif subcommand == "clear":
+                state.clear_directives()
+            else:
+                print("Usage: directives <add|remove|list|clear> [text]")
             continue
-        if choice in {"3", "la"}:
-            state.add_directive("I am in LA right now, find some clients that might be in LA too so I can catch up with them")
-            continue
-        if choice in {"4", "catchup"}:
-            state.add_directive("Find someone that I haven't talked to for a while but I should")
-            continue
-        if choice in {"5", "disqualify"}:
-            state.add_directive(
-                "Find someone I have been talking to for too long and might not be interested in donating, so I can disqualify them"
-            )
-            continue
-        if choice in {"6", "todo"}:
-            state.generate_todo()
-            continue
-        if choice in {"7", "event"}:
-            event_description = input("Describe the event (include the donor's name): ").strip()
-            state.plan_by_event(event_description)
-            continue
-        if choice in {"8", "reflect"}:
-            donor_name = input("Donor name: ").strip()
-            meeting_notes = input("Meeting recap / notes: ").strip()
-            missed_raw = input("Missed questions (comma-separated, optional): ").strip()
-            missed = [item.strip() for item in missed_raw.split(",") if item.strip()]
-            state.reflect_on_meeting(donor_name, meeting_notes, missed)
-            continue
-        if choice in {"9", "show"}:
+        if command == "donors":
             state.show_donors()
             continue
-        if choice in {"10", "directives"}:
-            state.show_directives()
+        if command == "plan":
+            if not args:
+                print("Usage: plan <donor name>")
+                continue
+            donor_name = " ".join(args)
+            state.plan_meeting_for_donor(donor_name)
             continue
-        if choice in {"11", "clear"}:
-            state.clear_directives()
+        if command == "event":
+            description = " ".join(args)
+            state.plan_by_event(description)
             continue
-        if choice in {"12", "note"}:
-            donor_name = input("Donor name: ").strip()
-            note = input("Additional note to append: ").strip()
-            state.append_note(donor_name, note)
+        if command == "reflect":
+            if not args:
+                print("Usage: reflect <donor name>")
+                continue
+            donor_name = " ".join(args)
+            notes = _prompt_multiline(
+                "Paste your meeting recap (end with a blank line):"
+            )
+            missed_raw = input("Missed questions (comma-separated, optional): ").strip()
+            missed = [item.strip() for item in missed_raw.split(",") if item.strip()]
+            state.reflect_on_meeting(donor_name, notes, missed)
             continue
-        print("Unknown option. Please try again.")
+        print("Unknown command. Type 'help' to see the available options.")
 
 
 if __name__ == "__main__":

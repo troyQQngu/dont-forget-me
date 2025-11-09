@@ -88,45 +88,84 @@ by the stub LLM.
    PYTHONPATH=src python examples/offline_manual_demo.py
    ```
 
-2. **Baseline to-do list** – Choose option **[1] Reset & show baseline to-do
-   list**. Narrate that this uses the unmodified dataset (Alicia’s pledge note is
-   intentionally absent) and the default directives, so the output reflects the
-   "out-of-the-box" priorities.
+   The tool restores `data/donors.json` to the baseline dataset (with Alicia's
+   pledge reminder removed) and immediately prints the current to-do list. Use
+   this first output to describe the "default" priorities before any fresh
+   context is added.
 
-3. **Append the pledge reminder** – Select **[2] Append Alicia's $100k pledge
-   note**. Immediately regenerate the plan with **[6] Generate to-do list** and
-   point out how three new tasks appear: finalizing mentor background checks,
-   polishing the matching roster, and publishing the progress dashboard—each
-   explicitly tied to unlocking the $100K gift.
+2. **Append the pledge reminder manually** – Open `data/donors.json` in your
+   editor, find Alicia Gomez’s `notes`, and paste the following sentence at the
+   end of the paragraph (or adapt the language to suit your narrative):
 
-4. **Layer location context** – Add the LA directive with **[3]** and re-run the
-   to-do list via **[6]**. Emphasize the new "Schedule Los Angeles touchpoint"
-   items that reference donor primary cities and travel notes.
+   > She said if I can deliver the mentorship pilot checklist—complete mentor
+   > background checks, finalize the mentor-mentee matching roster, and publish
+   > the progress dashboard—by next Wednesday, she will donate 100,000 dollars by
+   > the following week.
 
-5. **Surface dormant relationships** – Activate **[4]** to request donors you
-   haven’t spoken with recently, then hit **[6]** again. Narrate how the stub
-   reports the number of days since the last interaction and recommends specific
-   catch-up actions.
+   Save the file, return to the terminal, and run `todo`. Point out how the
+   refreshed list now includes three mission-critical deliverables tied directly
+   to that freshly recorded pledge commitment.
 
-6. **Identify prospects to pause** – Use **[5]** to add the disqualification
-   directive and regenerate with **[6]**. Highlight the "Assess fit" entries that
-   reference notes about waning interest.
+3. **Layer location context** – Type the following and hit enter:
 
-7. **Plan an event-specific meeting** – Choose **[7] Plan meeting by event
-   description** and type `Meet Alicia at Gala 2025`. Show the JSON plan that now
-   includes event-specific tips in addition to the usual objectives and gift
-   suggestions.
+   ```
+   assistant> directives add "I am in LA right now, find some clients that might be in LA too so I can catch up with them"
+   assistant> todo
+   ```
 
-8. **Capture a post-meeting reflection** – Trigger **[8] Reflect on meeting
-   notes**. Provide Alicia’s name, summarize a meeting where you forgot to
-   confirm logistics or deliverables, and optionally list missed questions.
-   Review how the assistant flags the unasked questions (e.g., site visit,
-   robotics interest) and restates the high-stakes follow-ups tied to the
-   $100K pledge.
+   Narrate the new "Schedule Los Angeles touchpoint" entries and tie each back to
+   donor primary cities or travel notes.
 
-9. Remind the audience that options **[9]–[12]** let you inspect donor notes,
-   review active directives, clear the context, or append custom notes—handy for
-   ad-hoc audience requests during rehearsal.
+4. **Surface dormant relationships** – Add another directive and refresh the
+   list:
+
+   ```
+   assistant> directives add "Find someone that I haven't talked to for a while but I should"
+   assistant> todo
+   ```
+
+   Call out how the assistant cites the number of days since each donor’s last
+   interaction to justify the catch-up suggestions.
+
+5. **Identify prospects to pause** – Layer the disqualification directive and
+   regenerate:
+
+   ```
+   assistant> directives add "Find someone I have been talking to for too long and might not be interested in donating, so I can disqualify them"
+   assistant> todo
+   ```
+
+   Highlight the "Assess fit" actions that reference donors signaling waning
+   interest.
+
+6. **Plan an event-specific meeting** – Run:
+
+   ```
+   assistant> event Meet Alicia at Gala 2025
+   ```
+
+   Show how the JSON plan blends Alicia's standing objectives with fresh tips
+   specific to the gala context.
+
+7. **Capture a post-meeting reflection** – Trigger a follow-up summary by
+   entering:
+
+   ```
+   assistant> reflect Alicia Gomez
+   ```
+
+   When prompted, paste notes that admit you forgot to confirm the mentorship
+   deliverables and skipped a question about her daughter's robotics team. After
+   submitting optional "missed questions," walk through the output that reminds
+   you to deliver the checklist items immediately and revisit the unanswered
+   relationship-building prompts.
+
+8. Mention that additional helpers are available:
+   * `directives list` shows the active context filters.
+   * `directives clear` wipes them if you want to restart a section.
+   * `plan Alicia Gomez` generates a strategy without referencing an event.
+   * `donors` prints the current notes so you can confirm manual edits before the
+     next command.
 
 ---
 

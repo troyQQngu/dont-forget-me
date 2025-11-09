@@ -51,12 +51,12 @@ If you want to experiment without API access, run the bundled example script tha
 PYTHONPATH=src python examples/offline_manual_demo.py
 ```
 
-The script loads the sample data in `data/`, prompts you to add directives or append new notes, and prints deterministic JSON so you can rehearse the workflows end-to-end without a network connection or API key. It demonstrates:
+The script restores `data/donors.json` to a baseline state (with Alicia's $100k pledge note removed), prints the default to-do list, and then waits for free-form commands. Edit the JSON just as you would for the live system—append notes in your editor, save, return to the prompt, and run `todo` to see how the recommendations change. A few highlights:
 
-* Updating Alicia's notes with the pledged deliverables (background checks, matching roster, progress dashboard) and seeing those tasks immediately prioritized in the to-do list.
-* Tailoring the daily plan with directives—focus on Los Angeles donors, surface people you haven't spoken with in a while, or flag prospects to disqualify—and receiving reasoning tied directly to donor data.
-* Logging meeting recaps that mention forgotten questions so the assistant reminds you to follow up on critical gaps right away.
-* Generating meeting strategies that echo the same context, all without calling a live language model.
+* After you add Alicia's pledge reminder manually, the next `todo` run surfaces the mentorship deliverables (background checks, matching roster, progress dashboard) with grounded reasoning.
+* Use `directives add …` to layer location filters, catch-up requests, or disqualification criteria before regenerating the plan—each recommendation cites the donor data that triggered it.
+* `event Meet Alicia at Gala 2025` produces an event-specific meeting plan, while `reflect Alicia Gomez` analyzes your recap for missed questions and urgent follow-ups.
+* Because the script reloads from disk for every command, any manual edit to `data/` is reflected immediately, making the rehearsal feel identical to a live LLM session.
 
 
 ## Detailed demo process
