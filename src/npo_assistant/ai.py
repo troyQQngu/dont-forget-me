@@ -21,7 +21,8 @@ MEETING_SYSTEM_PROMPT = (
     "You advise nonprofit fundraisers on donor meetings. Always respond with valid "
     "JSON matching the schema: {\"meeting_format\": string, \"discussion_topics\": "
     "[string], \"gift_ideas\": [string], \"pre_meeting_preparation\": [string], "
-    "\"follow_up_plan\": string}."
+    "\"follow_up_plan\": string}. If an event description is provided, ground the plan "
+    "in that context and offer event-specific strategies."
 )
 
 REFLECTION_SYSTEM_PROMPT = (
@@ -136,6 +137,7 @@ def plan_meeting(
     *,
     meeting_date: date | None = None,
     objectives: Optional[Sequence[str]] = None,
+    event: str | None = None,
     llm: Optional[LLMClient] = None,
 ) -> dict:
     """Create a meeting strategy for ``donor`` with the help of an LLM."""
@@ -156,6 +158,8 @@ def plan_meeting(
     }
     if objectives:
         payload["fundraiser_objectives"] = list(objectives)
+    if event:
+        payload["event"] = event
 
     response = _complete_json(llm_client, system=MEETING_SYSTEM_PROMPT, payload=payload)
     required_keys = {

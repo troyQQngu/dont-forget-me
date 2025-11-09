@@ -183,6 +183,7 @@ class DemoStubLLM:
     def _meeting_plan(self, payload: dict) -> dict:
         donor = payload["donor"]
         objectives = payload.get("fundraiser_objectives", [])
+        event = payload.get("event")
         name = donor["name"]
         plan = {
             "meeting_format": f"Coffee meeting with {name} at their preferred venue in Los Angeles",
@@ -207,6 +208,22 @@ class DemoStubLLM:
             plan["discussion_topics"].append("Explore wine education experiences that fit her sommelier expertise")
         if objectives:
             plan["discussion_topics"].extend(objectives)
+        if event:
+            plan["event"] = event
+            plan["event_specific_tips"] = [
+                (
+                    "Personalize the agenda with one high-impact story tied directly to the event theme so the conversation feels anchored."
+                ),
+                (
+                    "Confirm logistics like guest list, dress code, and any moments where Alicia can speak or be recognized."
+                ),
+                (
+                    "Bring a small keepsake—such as a robotics showcase photo card—that ties Alicia's passions to the gala experience."
+                ),
+            ]
+            plan["pre_meeting_preparation"].append(
+                "Draft talking points specific to the event so you can seamlessly transition from celebration to commitment."
+            )
         return plan
 
     def _meeting_reflection(self, payload: dict) -> dict:
@@ -275,14 +292,52 @@ class DemoStubLLM:
 class DemoState:
     """Mutable state for the interactive walkthrough."""
 
+    PLEDGE_SNIPPET = (
+        "She said if I can deliver the mentorship pilot checklist—complete mentor background checks, "
+        "finalize the mentor-mentee matching roster, and publish the progress dashboard—by next Wednesday, "
+        "she will donate 100,000 dollars by the following week."
+    )
+
+    PLEDGE_REMINDER = (
+        "She said if I can finalize the mentor background checks, confirm the mentor-mentee matching roster, and send "
+        "her the updated mentorship progress dashboard by next week, then she will donate 100,000 dollars."
+    )
+
     def __init__(self, data_dir: Path) -> None:
-        self.donors = load_donors(data_dir / "donors.json")
-        self.schedule = load_schedule(data_dir / "schedule.json")
+        self.data_dir = data_dir
         self.llm = DemoStubLLM()
         self.directives: list[str] = []
+        self.donors = []
+        self.schedule = []
+        self.reset()
+
+    def reset(self) -> None:
+        """Reload data and remove Alicia's pledge snippet to show the baseline state."""
+
+        self.donors = load_donors(self.data_dir / "donors.json")
+        self.schedule = load_schedule(self.data_dir / "schedule.json")
+        self.llm = DemoStubLLM()
+        self.directives = []
+        self._strip_alicia_pledge()
+        print("Reset demo state to the baseline dataset.")
+
+    def _strip_alicia_pledge(self) -> None:
+        alicia = find_donor(self.donors, "Alicia Gomez")
+        if not alicia:
+            return
+        if self.PLEDGE_SNIPPET in alicia.notes:
+            alicia.notes = alicia.notes.replace(
+                self.PLEDGE_SNIPPET,
+                (
+                    "She is considering a major spring pledge and wants proof the mentorship pilot is truly launch-ready."
+                ),
+            )
 
     def add_directive(self, directive: str) -> None:
         if directive:
+            if directive in self.directives:
+                print(f"Directive already active: {directive}")
+                return
             self.directives.append(directive)
             print(f"Added directive: {directive}")
 
@@ -300,6 +355,9 @@ class DemoState:
         donor.notes += note.strip()
         print(f"Updated notes for {donor.name}.")
 
+    def add_alicia_pledge(self) -> None:
+        self.append_note("Alicia Gomez", self.PLEDGE_REMINDER)
+
     def generate_todo(self) -> None:
         tasks = generate_daily_todo(
             self.donors,
@@ -314,7 +372,7 @@ class DemoState:
             print(f"{idx}. [{task['time']}] {task['task']} ({donors})")
             print(f"   → {task['reason']}\n")
 
-    def plan_meeting(self, donor_name: str) -> None:
+    def plan_meeting(self, donor_name: str, event: str | None = None) -> None:
         donor = find_donor(self.donors, donor_name)
         if not donor:
             print(f"Could not find donor named '{donor_name}'.")
@@ -323,10 +381,22 @@ class DemoState:
             donor,
             meeting_date=date(2024, 3, 25),
             objectives=["Confirm mentorship deliverables are ready", "Discuss LA alumni mixer logistics"],
+            event=event,
             llm=self.llm,
         )
         print("\nMeeting plan:\n")
         print(json.dumps(plan, indent=2))
+
+    def plan_by_event(self, description: str) -> None:
+        if not description:
+            print("Please provide an event description (e.g., 'Meet Alicia at Gala 2025').")
+            return
+        lowered = description.lower()
+        donor = next((d for d in self.donors if d.name.lower() in lowered), None)
+        if not donor:
+            print("Could not infer a donor from that event description. Try including their full name.")
+            return
+        self.plan_meeting(donor.name, event=description)
 
     def reflect_on_meeting(self, donor_name: str, meeting_notes: str, missed: list[str]) -> None:
         donor = find_donor(self.donors, donor_name)
@@ -370,80 +440,89 @@ def main() -> None:
             Welcome to the offline interactive demo! This walkthrough uses a deterministic stub instead of a live LLM so you
             can still showcase how the assistant grounds recommendations in donor notes, directives, and meeting recaps.
 
-            Try the following sequence to mirror the product demo:
-              1. Use option [5] to append fresh context to a donor's notes (e.g., Alicia promised $100k once you finish specific
-                 mentorship tasks by next week).
-              2. Add directives with option [2] such as "I am in LA right now..." or "find someone I haven't talked to for a
-                 while..." before generating the to-do list with option [4].
-              3. After a meeting, record your recap with option [6]; the assistant will highlight the important follow-ups you
-                 missed based on the new notes.
+            The menu is organized to mirror the final presentation:
+              • Option [1] resets to the baseline dataset (with Alicia's pledge note removed) and immediately shows the default
+                to-do list.
+              • Option [2] appends the $100k pledge reminder to Alicia's notes, enabling the assistant to surface the new
+                deliverables on the next to-do run.
+              • Options [3], [4], and [5] add the LA, catch-up, and disqualify directives one by one so you can regenerate the
+                list after each change.
+              • Option [7] lets you plan a donor interaction by typing an event description such as "Meet Alicia at Gala 2025".
+              • Option [8] records meeting notes so the assistant can flag missed questions and urgent follow-ups.
 
             Type the menu number (or keyword) to trigger an action. Enter "quit" to exit.
             """
         )
     )
 
-    actions = {
-        "1": state.show_donors,
-        "show": state.show_donors,
-        "2": None,
-        "add": None,
-        "3": state.clear_directives,
-        "clear": state.clear_directives,
-        "4": state.generate_todo,
-        "todo": state.generate_todo,
-        "5": None,
-        "note": None,
-        "6": None,
-        "reflect": None,
-        "7": state.show_directives,
-        "directives": state.show_directives,
-        "8": state.plan_meeting,
-        "plan": state.plan_meeting,
-    }
-
     while True:
         print(
             "\nMenu:\n"
-            "  [1] Show donors\n"
-            "  [2] Add directive\n"
-            "  [3] Clear directives\n"
-            "  [4] Generate to-do list (2024-03-25)\n"
-            "  [5] Append note to donor\n"
-            "  [6] Reflect on meeting\n"
-            "  [7] Show active directives\n"
-            "  [8] Plan meeting for a donor\n"
+            "  [1] Reset & show baseline to-do list\n"
+            "  [2] Append Alicia's $100k pledge note\n"
+            "  [3] Add directive: 'I am in LA right now...'\n"
+            "  [4] Add directive: 'Find someone I haven't talked to for a while...'\n"
+            "  [5] Add directive: 'Find someone I have been talking to for too long...'\n"
+            "  [6] Generate to-do list with current context\n"
+            "  [7] Plan meeting by event description\n"
+            "  [8] Reflect on meeting notes\n"
+            "  [9] Show donor snapshots\n"
+            "  [10] Show active directives\n"
+            "  [11] Clear directives\n"
+            "  [12] Append custom note to donor\n"
             "  [quit] Exit\n"
         )
         choice = input("Select an option: ").strip().lower()
         if choice in {"quit", "q", "exit"}:
             print("Goodbye!")
             break
-        if choice in {"2", "add"}:
-            directive = input("Enter directive to add: ").strip()
-            state.add_directive(directive)
+        if choice in {"1", "reset"}:
+            state.reset()
+            state.generate_todo()
             continue
-        if choice in {"5", "note"}:
-            donor_name = input("Donor name: ").strip()
-            note = input("Additional note to append: ").strip()
-            state.append_note(donor_name, note)
+        if choice in {"2", "pledge"}:
+            state.add_alicia_pledge()
             continue
-        if choice in {"6", "reflect"}:
+        if choice in {"3", "la"}:
+            state.add_directive("I am in LA right now, find some clients that might be in LA too so I can catch up with them")
+            continue
+        if choice in {"4", "catchup"}:
+            state.add_directive("Find someone that I haven't talked to for a while but I should")
+            continue
+        if choice in {"5", "disqualify"}:
+            state.add_directive(
+                "Find someone I have been talking to for too long and might not be interested in donating, so I can disqualify them"
+            )
+            continue
+        if choice in {"6", "todo"}:
+            state.generate_todo()
+            continue
+        if choice in {"7", "event"}:
+            event_description = input("Describe the event (include the donor's name): ").strip()
+            state.plan_by_event(event_description)
+            continue
+        if choice in {"8", "reflect"}:
             donor_name = input("Donor name: ").strip()
             meeting_notes = input("Meeting recap / notes: ").strip()
             missed_raw = input("Missed questions (comma-separated, optional): ").strip()
             missed = [item.strip() for item in missed_raw.split(",") if item.strip()]
             state.reflect_on_meeting(donor_name, meeting_notes, missed)
             continue
-        if choice in {"8", "plan"}:
-            donor_name = input("Donor name for planning: ").strip()
-            state.plan_meeting(donor_name)
+        if choice in {"9", "show"}:
+            state.show_donors()
             continue
-        action = actions.get(choice)
-        if action is None:
-            print("Unknown option. Please try again.")
+        if choice in {"10", "directives"}:
+            state.show_directives()
             continue
-        action()
+        if choice in {"11", "clear"}:
+            state.clear_directives()
+            continue
+        if choice in {"12", "note"}:
+            donor_name = input("Donor name: ").strip()
+            note = input("Additional note to append: ").strip()
+            state.append_note(donor_name, note)
+            continue
+        print("Unknown option. Please try again.")
 
 
 if __name__ == "__main__":
