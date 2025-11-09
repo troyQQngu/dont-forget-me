@@ -52,6 +52,7 @@ def _serialize_donor(donor: Donor) -> dict:
         "primary_city": donor.primary_city,
         "time_zone": donor.time_zone,
         "engagement_stage": donor.engagement_stage,
+        "status": donor.status,
         "strategic_objectives": donor.strategic_objectives,
         "open_questions": donor.open_questions,
         "interactions": [

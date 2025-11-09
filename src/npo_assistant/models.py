@@ -38,6 +38,7 @@ class Donor:
     primary_city: Optional[str] = None
     time_zone: Optional[str] = None
     engagement_stage: Optional[str] = None
+    status: Optional[str] = None
     strategic_objectives: List[str] = field(default_factory=list)
     open_questions: List[str] = field(default_factory=list)
 
@@ -59,6 +60,7 @@ class Donor:
             primary_city=payload.get("primary_city"),
             time_zone=payload.get("time_zone"),
             engagement_stage=payload.get("engagement_stage"),
+            status=payload.get("status"),
             strategic_objectives=payload.get("strategic_objectives", []),
             open_questions=payload.get("open_questions", []),
         )

@@ -57,9 +57,29 @@ class DemoStubLLM:
             added_tasks.add(task)
 
         donors_by_name = {donor["name"]: donor for donor in donors}
-        la_focus = any("los angeles" in d or " la" in d for d in directives)
-        reconnect_focus = any("haven't talked" in d or "catch up" in d for d in directives)
-        disqualify_focus = any("disqualify" in d or "stop engaging" in d or "too long" in d for d in directives)
+        def has_phrase(phrases: tuple[str, ...]) -> bool:
+            return any(any(phrase in directive for phrase in phrases) for directive in directives)
+
+        la_focus = any("los angeles" in d or " in la" in d for d in directives)
+        reconnect_focus = has_phrase(
+            (
+                "haven't talked",
+                "havent talked",
+                "revive dormant",
+                "reconnect",
+                "dormant relationship",
+                "re-engage",
+            )
+        )
+        disqualify_focus = has_phrase(
+            (
+                "disqualify",
+                "stop engaging",
+                "too long",
+                "disengage",
+                "pause outreach",
+            )
+        )
 
         # Always elevate Alicia's pledged deliverables when present in the notes.
         alicia = donors_by_name.get("Alicia Gomez")
@@ -83,8 +103,8 @@ class DemoStubLLM:
             add_task(
                 "Publish the mentorship progress dashboard",
                 (
-                    "Without the updated dashboard Alicia can't verify impact. Ship the metrics summary so the pledge can clear"
-                    "by next week."
+                    "Without the updated dashboard Alicia can't verify impact. Ship the metrics summary so the pledge can "
+                    "clear by next week."
                 ),
                 ["Alicia Gomez"],
             )
@@ -96,6 +116,9 @@ class DemoStubLLM:
                 continue
             donor_name = entry.get("donor")
             if donor_name:
+                donor = donors_by_name.get(donor_name)
+                if donor and donor.get("status") in {"paused", "disqualified", "inactive"}:
+                    continue
                 reason = (
                     f"Prep for {entry['title']} at {entry.get('location', 'the scheduled venue')}. "
                     f"Use the agenda notes: {entry.get('notes', 'Review donor priorities.')}"
@@ -126,6 +149,7 @@ class DemoStubLLM:
                 for donor in donors
                 if donor.get("primary_city")
                 and any(city in donor["primary_city"].lower() for city in ("los angeles", "pasadena"))
+                and donor.get("status") not in {"paused", "disqualified", "inactive"}
             ]
             for donor in la_donors:
                 add_task(
@@ -144,8 +168,8 @@ class DemoStubLLM:
                     add_task(
                         f"Reconnect with {donor['name']}",
                         (
-                            f"Directive: revive dormant relationships. It's been {gap} days since the last touchpoint with "
-                            f"{donor['name']}; send a tailored update to restart the conversation."
+                            f"It's been {gap} days since the last touchpoint with {donor['name']}. Send a tailored update to "
+                            "restart the conversation."
                         ),
                         [donor["name"]],
                     )
@@ -153,8 +177,8 @@ class DemoStubLLM:
                     add_task(
                         f"Introduce yourself to {donor['name']}",
                         (
-                            "Directive: find contacts you haven't spoken with yet. There's no prior interaction logged, so send"
-                            f"a welcome message to {donor['name']}."
+                            "You haven't logged a first conversation yet. Send a warm introduction so they know you're the "
+                            f"point of contact for {donor['name']}."
                         ),
                         [donor["name"]],
                     )
@@ -162,16 +186,30 @@ class DemoStubLLM:
         if disqualify_focus:
             for donor in donors:
                 notes = donor.get("notes", "").lower()
-                stalled = "prefers fewer" in notes or "not ready" in notes or donor.get("engagement_stage") == "qualification"
-                if stalled:
-                    add_task(
-                        f"Assess fit of {donor['name']}",
-                        (
-                            f"Directive: identify prospects to pause. {donor['name']} has signaled limited interest recently—"
-                            "review whether continued outreach adds value or if you should disqualify for now."
-                        ),
-                        [donor["name"]],
+                stalled = (
+                    donor.get("status") in {"paused", "disqualified"}
+                    or "prefers fewer" in notes
+                    or "not ready" in notes
+                    or donor.get("engagement_stage") == "qualification"
+                )
+                if not stalled:
+                    continue
+                if donor.get("status") in {"paused", "disqualified"}:
+                    reason = (
+                        f"{donor['name']} is already marked as {donor.get('status')}. Confirm the CRM reflects this pause and "
+                        "document any final notes."
                     )
+                elif "prefers fewer" in notes:
+                    reason = (
+                        f"{donor['name']} asked for fewer check-ins. Reassess whether continued outreach aligns with their "
+                        "interest level before the next touchpoint."
+                    )
+                else:
+                    reason = (
+                        f"{donor['name']} remains in qualification without momentum. Decide if they should be paused so you can "
+                        "refocus on stronger prospects."
+                    )
+                add_task(f"Pause outreach to {donor['name']}", reason, [donor["name"]])
 
         if not tasks:
             add_task(
@@ -235,7 +273,13 @@ class DemoStubLLM:
 
         follow_ups: list[str] = []
         missed_opportunities: list[str] = []
-        suggested_questions = list(payload.get("missed_questions", []))
+        raw_missed = [item for item in payload.get("missed_questions", []) if item]
+        filtered_missed = [
+            item
+            for item in raw_missed
+            if item.strip().lower() not in {"any suggestions", "any suggestions?"}
+        ]
+        suggested_questions = list(filtered_missed)
 
         deliverables = [
             (
@@ -256,7 +300,7 @@ class DemoStubLLM:
             if keyword not in notes_lower:
                 follow_ups.append(action)
                 missed_opportunities.append(
-                    f"Missed the chance to confirm the {keyword}; her $100k gift depends on seeing this handled."
+                    f"Still need to confirm the {keyword} tied to Alicia's $100k pledge."
                 )
 
         for question in donor.get("open_questions", []):
@@ -276,16 +320,13 @@ class DemoStubLLM:
         missed_opportunities = list(dict.fromkeys(missed_opportunities))
 
         return {
-            "missed_opportunities": missed_opportunities or [
-                "No major gaps detected, but reinforce commitments in your recap."
-            ],
-            "follow_up_actions": follow_ups or [
-                "Send a thank-you email reiterating next steps within 24 hours."
-            ],
+            "missed_opportunities": missed_opportunities
+            or ["No major gaps detected, but reinforce commitments in your recap."],
+            "follow_up_actions": follow_ups
+            or ["Send a thank-you email reiterating next steps within 24 hours."],
             "suggested_questions": suggested_questions,
             "updated_timeline": (
-                f"Complete the follow-ups within the next {horizon} days to keep Alicia's pledge on track; "
-                "block calendar time immediately so nothing slips."
+                f"Complete these follow-ups within {horizon} days so Alicia's pledge stays on track."
             ),
         }
 
@@ -420,11 +461,30 @@ class DemoState:
             return
         donors = self._load_current_donors()
         lowered = description.lower()
-        donor = next((d for d in donors if d.name.lower() in lowered), None)
-        if not donor:
-            print("Could not infer a donor from that event description. Try including their full name.")
+        full_matches = [d for d in donors if d.name.lower() in lowered]
+        if full_matches:
+            self.plan_meeting_for_donor(full_matches[0].name, event=description)
             return
-        self.plan_meeting_for_donor(donor.name, event=description)
+
+        first_name_matches = [
+            d for d in donors if d.name.split()[0].lower() in lowered
+        ]
+        first_name_matches = list({d.name: d for d in first_name_matches}.values())
+        if len(first_name_matches) == 1:
+            self.plan_meeting_for_donor(first_name_matches[0].name, event=description)
+            return
+
+        last_name_matches = [
+            d for d in donors if d.name.split()[-1].lower() in lowered
+        ]
+        last_name_matches = list({d.name: d for d in last_name_matches}.values())
+        if len(last_name_matches) == 1:
+            self.plan_meeting_for_donor(last_name_matches[0].name, event=description)
+            return
+
+        print(
+            "Could not confidently infer a donor from that event description. Mention their full name to clarify."
+        )
 
     def reflect_on_meeting(self, donor_name: str, meeting_notes: str, missed: list[str]) -> None:
         donors = self._load_current_donors()
@@ -440,7 +500,27 @@ class DemoState:
             llm=self.llm,
         )
         print("\nFollow-up guidance:\n")
-        print(json.dumps(summary, indent=2))
+        missed_items = summary.get("missed_opportunities", [])
+        if missed_items:
+            print("Missed commitments to revisit:")
+            for item in missed_items:
+                print(f"- {item}")
+            print()
+        actions = summary.get("follow_up_actions", [])
+        if actions:
+            print("Immediate next steps:")
+            for action in actions:
+                print(f"- {action}")
+            print()
+        questions = summary.get("suggested_questions", [])
+        if questions:
+            print("Questions to cover next time:")
+            for question in questions:
+                print(f"- {question}")
+            print()
+        timeline = summary.get("updated_timeline")
+        if timeline:
+            print(f"Timing reminder: {timeline}")
 
     def show_donors(self) -> None:
         donors = self._load_current_donors()

@@ -135,8 +135,8 @@ by the stub LLM.
    assistant> todo
    ```
 
-   Highlight the "Assess fit" actions that reference donors signaling waning
-   interest.
+   Highlight the "Pause outreach" actions that explain why each donor is a poor
+   near-term fit.
 
 6. **Plan an event-specific meeting** – Run:
 
@@ -156,9 +156,9 @@ by the stub LLM.
 
    When prompted, paste notes that admit you forgot to confirm the mentorship
    deliverables and skipped a question about her daughter's robotics team. After
-   submitting optional "missed questions," walk through the output that reminds
-   you to deliver the checklist items immediately and revisit the unanswered
-   relationship-building prompts.
+   submitting optional "missed questions," walk through the bulleted guidance
+   that reminds you to deliver the checklist items immediately and revisit the
+   unanswered relationship-building prompts.
 
 8. Mention that additional helpers are available:
    * `directives list` shows the active context filters.

@@ -79,6 +79,7 @@
     "primary_city": "Pasadena, CA",
     "time_zone": "America/Los_Angeles",
     "engagement_stage": "qualification",
+    "status": "paused",
     "interactions": [
       {
         "date": "2024-03-01",
