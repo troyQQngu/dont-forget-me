@@ -1,21 +1,32 @@
 [
   {
     "start": "2024-03-25T09:00:00",
-    "end": "2024-03-25T09:30:00",
-    "title": "Call with Cara Lee",
-    "donor": "Cara Lee",
-    "location": "Zoom"
+    "end": "2024-03-25T09:45:00",
+    "title": "Coffee briefing with Alicia Gomez",
+    "donor": "Alicia Gomez",
+    "location": "Downtown LA Cafe",
+    "notes": "Review mentorship pilot checklist drafts before meeting."
   },
   {
     "start": "2024-03-25T12:00:00",
-    "end": "2024-03-25T13:00:00",
-    "title": "Lunch with Alicia Gomez",
-    "donor": "Alicia Gomez",
-    "location": "Downtown Cafe"
+    "end": "2024-03-25T12:30:00",
+    "title": "Call with Cara Lee",
+    "donor": "Cara Lee",
+    "location": "Zoom",
+    "notes": "Confirm intro to program director and Pasadena partnership metrics."
   },
   {
     "start": "2024-03-26T10:00:00",
     "end": "2024-03-26T11:00:00",
-    "title": "Program team sync"
+    "title": "Program team sync",
+    "notes": "Gather updates needed for donor follow-ups."
+  },
+  {
+    "start": "2024-03-27T14:00:00",
+    "end": "2024-03-27T14:30:00",
+    "title": "Video update with David Singh",
+    "donor": "David Singh",
+    "location": "Teams",
+    "notes": "Preview incubator dashboard outline and LA trip logistics."
   }
 ]

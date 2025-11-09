@@ -1,9 +1,10 @@
 # dont-forget-me
 
-This project provides an AI-assisted workflow that helps a non-profit employee manage donor relationships. The assistant currently supports two workflows:
+This project provides an AI-assisted workflow that helps a non-profit employee manage donor relationships. The assistant currently supports three complementary workflows:
 
-1. Generate a prioritized to-do list for the current day based on a weekly schedule and donor information.
-2. Produce a meeting strategy for a specific donor, including talking points, gift ideas, and follow-up suggestions.
+1. Generate a prioritized to-do list for the current day based on a weekly schedule, rich donor notes, and any custom directives you provide.
+2. Produce a meeting strategy for a specific donor, including talking points, gift ideas, preparation steps, and follow-up suggestions aligned to your objectives.
+3. Reflect on a meeting recap to surface missed opportunities, follow-up actions, and questions you still need to ask.
 
 ## Project layout
 
@@ -21,14 +22,26 @@ data/
 
 ## Usage
 
-Create or update the `data/donors.json` and `data/schedule.json` files to match your organization. Set the `OPENAI_API_KEY` environment variable (or pass `--api-key` to the CLI), then run:
+Create or update the `data/donors.json` and `data/schedule.json` files to match your organization. The sample data illustrates long-form relationship notes that contain commitments ("deliver the mentorship checklist items A/B/C"), personal context, location hints, and open questions. The model leans on this context when generating suggestions.
+
+Set the `OPENAI_API_KEY` environment variable (or pass `--api-key` to the CLI), then run:
 
 ```
-PYTHONPATH=src python -m npo_assistant.cli data todo --date 2024-03-25
-PYTHONPATH=src python -m npo_assistant.cli data plan "Alicia Gomez" --date 2024-03-25
+PYTHONPATH=src python -m npo_assistant.cli data todo --date 2024-03-25 \
+  --directive "I am in LA right now, prioritize donors I can meet there" \
+  --directive "Flag anyone I should pause because conversations are stalling"
+
+PYTHONPATH=src python -m npo_assistant.cli data plan "Alicia Gomez" --date 2024-03-25 \
+  --objective "Confirm that the mentorship checklist items A/B/C are ready" \
+  --objective "Identify a thoughtful wine-related touch that isn't a bottle"
+
+PYTHONPATH=src python -m npo_assistant.cli data reflect "Alicia Gomez" \
+  --notes "Met today, promised to send checklist and forgot to ask about daughter's robotics interest." \
+  --missed-question "Confirm if Alicia prefers a site visit or virtual tour" \
+  --horizon 5
 ```
 
-Use `--model` to select a different OpenAI chat model if desired. The commands output JSON describing the suggested to-do list or meeting plan. You can pipe the results to other tools or transform them into a UI of your choice.
+Use `--model` to select a different OpenAI chat model if desired. Each command outputs JSON that you can pipe into downstream tooling or a prototype UI.
 
 ### Offline manual experiment
 
@@ -38,7 +51,11 @@ If you want to experiment without API access, run the bundled example script tha
 PYTHONPATH=src python examples/offline_manual_demo.py
 ```
 
-The script uses the sample data in `data/`, calls the same planning helpers as the CLI, and prints deterministic JSON so you can confirm the workflows end-to-end without a network connection or API key.
+The script uses the sample data in `data/`, calls the same planning helpers as the CLI, and prints deterministic JSON so you can confirm the workflows end-to-end without a network connection or API key. It demonstrates:
+
+* A daily to-do list that clearly cites donor notes and your directives (e.g., focus on Los Angeles prospects).
+* A meeting plan that references commitments buried inside the donor notes, such as delivering checklist items before a pledged gift is released.
+* An interactive reflection that reminds you to follow up on missed questions right after the meeting.
 
 ## Development
 
@@ -55,4 +72,4 @@ The test suite uses stubbed responses that mimic the LLM output, so it does not 
 
 ## Extending the assistant
 
-Customize the prompts or supply an alternate `LLMClient` implementation to integrate with a different provider. The `generate_daily_todo` and `plan_meeting` functions both accept an optional `llm` argument so you can inject custom behavior or mocks.
+Customize the prompts or supply an alternate `LLMClient` implementation to integrate with a different provider. The `generate_daily_todo`, `plan_meeting`, and `reflect_on_meeting` functions accept optional `llm` arguments so you can inject custom behavior or mocks. You can also supply extra directives/objectives programmatically when orchestrating multi-step fundraising workflows.

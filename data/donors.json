@@ -2,33 +2,108 @@
   {
     "name": "Alicia Gomez",
     "giving_capacity": "major",
-    "interests": ["STEM education", "mentorship"],
+    "interests": ["STEM education", "mentorship", "wine science"],
     "preferred_contact": "coffee",
+    "primary_city": "Los Angeles, CA",
+    "time_zone": "America/Los_Angeles",
+    "engagement_stage": "cultivation",
     "last_gift_date": "2023-11-12",
     "last_gift_amount": 7500,
     "interactions": [
-      {"date": "2023-11-12", "type": "gala", "notes": "Pledged to support scholarship fund"}
+      {
+        "date": "2023-11-12",
+        "type": "gala",
+        "notes": "Pledged to support scholarship fund"
+      },
+      {
+        "date": "2024-02-18",
+        "type": "coffee",
+        "notes": "Asked for updates on mentorship pilot and wine appreciation class"
+      }
     ],
-    "notes": "Enjoys updates about alumni success stories"
+    "notes": "Alicia loves anything that blends STEM and mentorship. She is an accomplished sommelier who is picky about bottles, so curated experiences or education pieces resonate better than gifting wine directly. Daughter's birthday: Jun/06/1995. Son recently graduated from MIT and is exploring robotics internships. Last time we chatted about boutique Napa vineyards and she shared a list of favorite sustainable vintners. She said if I can deliver the mentorship pilot checklist (items A, B, C) and a progress dashboard by next Wednesday, she will donate 100,000 dollars by the following week. Also curious about leveraging her network to host a summer alumni mixer in Los Angeles.",
+    "strategic_objectives": [
+      "Deliver mentorship pilot checklist (A/B/C) before 2024-03-27",
+      "Provide update on sustainable wine education partnerships",
+      "Invite Alicia to host LA alumni mixer in June"
+    ],
+    "open_questions": [
+      "Does Alicia prefer a site visit or virtual tour when reviewing the mentorship pilot?",
+      "Is Alicia's daughter interested in volunteering at the robotics camp?"
+    ]
   },
   {
     "name": "Ben Ito",
     "giving_capacity": "mid",
     "interests": ["arts", "youth programs", "music"],
     "preferred_contact": "email",
+    "primary_city": "Seattle, WA",
+    "time_zone": "America/Los_Angeles",
+    "engagement_stage": "cultivation",
     "last_gift_date": "2022-05-04",
     "last_gift_amount": 1000,
     "interactions": [
-      {"date": "2022-09-18", "type": "phone", "notes": "Interested in volunteering"}
+      {
+        "date": "2024-01-12",
+        "type": "email",
+        "notes": "Loved the youth orchestra video and asked about instrument drive impact"
+      }
     ],
-    "notes": "Send quarterly impact reports"
+    "notes": "Ben performs in a community jazz trio and loves spotlighting student musicians. He recently mentioned that travel to LA is easy for him if there is a compelling volunteer opportunity. He has not donated in almost two years but keeps opening our newsletters. Mentioned wanting fewer check-ins and more tangible impact stories.",
+    "strategic_objectives": [
+      "Share updated impact story on music mentorship by 2024-04-05"
+    ],
+    "open_questions": [
+      "Is Ben ready to join the advisory circle or just volunteer?"
+    ]
   },
   {
     "name": "Cara Lee",
     "giving_capacity": "prospect",
-    "interests": ["community health"],
+    "interests": ["community health", "public policy"],
     "preferred_contact": "phone",
-    "interactions": [],
-    "notes": "Met at local chamber event"
+    "primary_city": "Pasadena, CA",
+    "time_zone": "America/Los_Angeles",
+    "engagement_stage": "qualification",
+    "interactions": [
+      {
+        "date": "2024-03-01",
+        "type": "phone",
+        "notes": "Appreciated the food access briefing; wants intro to program director"
+      }
+    ],
+    "notes": "Cara volunteers with local clinics and is training for a half marathon. Enjoys concise agendas. She responded well when we connected her with alumni advocates. Mentioned she might have questions about how our LA operations collaborate with Pasadena partners. Interested in speaking with beneficiaries directly before committing.",
+    "strategic_objectives": [
+      "Schedule intro with program director before 2024-03-29"
+    ],
+    "open_questions": [
+      "What metrics would help Cara evaluate community health impact?"
+    ]
+  },
+  {
+    "name": "David Singh",
+    "giving_capacity": "major",
+    "interests": ["higher education", "entrepreneurship"],
+    "preferred_contact": "video",
+    "primary_city": "New York, NY",
+    "time_zone": "America/New_York",
+    "engagement_stage": "stewardship",
+    "last_gift_date": "2024-02-01",
+    "last_gift_amount": 25000,
+    "interactions": [
+      {
+        "date": "2024-02-01",
+        "type": "video",
+        "notes": "Committed to funding startup incubator scholarships"
+      }
+    ],
+    "notes": "David appreciates structured agendas and regular metrics. Loves when we connect him with student founders. He is planning to be in Los Angeles for investor meetings in mid-April and asked if we could coordinate a breakfast with alumni entrepreneurs while he's in town. He hinted that if we streamline reporting and reduce meeting frequency, he might increase his commitment for Q3.",
+    "strategic_objectives": [
+      "Draft quarterly incubator dashboard by 2024-04-10",
+      "Coordinate LA alumni founder breakfast during his April trip"
+    ],
+    "open_questions": [
+      "Which alumni founders does David most want to meet in LA?"
+    ]
   }
 ]
