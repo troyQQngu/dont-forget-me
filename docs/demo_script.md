@@ -82,25 +82,51 @@ by the stub LLM.
 
 ## 3. Interactive offline rehearsal (8–10 minutes)
 
-1. Start the scripted experience:
+1. Launch the scripted experience:
 
    ```bash
    PYTHONPATH=src python examples/offline_manual_demo.py
    ```
 
-2. Follow the prompts. The script walks through four acts—each mirrors the live
-   demo but with deterministic stubbed responses. Narration tips for each act:
+2. **Baseline to-do list** – Choose option **[1] Reset & show baseline to-do
+   list**. Narrate that this uses the unmodified dataset (Alicia’s pledge note is
+   intentionally absent) and the default directives, so the output reflects the
+   "out-of-the-box" priorities.
 
-   | Act | What to type | What to emphasize |
-   | --- | --- | --- |
-   | 1. **Directive primer** | Accept the default date (2024-03-25) and enter the same three directives you would use live. | Show how the stub echoes LA prioritization, dormant donors to re-engage, and prospects to pause, all with grounded reasoning. |
-   | 2. **Note update & re-run** | When prompted, append the pledge reminder by entering:<br>`She said if we finalize the mentor background checks, deliver the matching roster, and publish the progress dashboard by next Friday, she'll wire $100,000.` | Immediately request the updated to-do list to demonstrate that the assistant now pushes those three tasks to the top with clear deadlines. |
-   | 3. **Meeting planning** | Provide Alicia's name and accept the suggested objectives. | Note how the stub references wine expertise, LA availability, and the mentorship commitments. |
-   | 4. **Post-meeting reflection** | Enter a recap where you forgot to confirm the site visit and volunteer paperwork. | Observe how the script produces reminders to send the checklist, lock the background check schedule, and follow up on the robotics question you missed. |
+3. **Append the pledge reminder** – Select **[2] Append Alicia's $100k pledge
+   note**. Immediately regenerate the plan with **[6] Generate to-do list** and
+   point out how three new tasks appear: finalizing mentor background checks,
+   polishing the matching roster, and publishing the progress dashboard—each
+   explicitly tied to unlocking the $100K gift.
 
-3. Close by pointing out that the offline experience logs every prompt/response
-   to the console, so presenters can practice answers to likely stakeholder
-   questions.
+4. **Layer location context** – Add the LA directive with **[3]** and re-run the
+   to-do list via **[6]**. Emphasize the new "Schedule Los Angeles touchpoint"
+   items that reference donor primary cities and travel notes.
+
+5. **Surface dormant relationships** – Activate **[4]** to request donors you
+   haven’t spoken with recently, then hit **[6]** again. Narrate how the stub
+   reports the number of days since the last interaction and recommends specific
+   catch-up actions.
+
+6. **Identify prospects to pause** – Use **[5]** to add the disqualification
+   directive and regenerate with **[6]**. Highlight the "Assess fit" entries that
+   reference notes about waning interest.
+
+7. **Plan an event-specific meeting** – Choose **[7] Plan meeting by event
+   description** and type `Meet Alicia at Gala 2025`. Show the JSON plan that now
+   includes event-specific tips in addition to the usual objectives and gift
+   suggestions.
+
+8. **Capture a post-meeting reflection** – Trigger **[8] Reflect on meeting
+   notes**. Provide Alicia’s name, summarize a meeting where you forgot to
+   confirm logistics or deliverables, and optionally list missed questions.
+   Review how the assistant flags the unasked questions (e.g., site visit,
+   robotics interest) and restates the high-stakes follow-ups tied to the
+   $100K pledge.
+
+9. Remind the audience that options **[9]–[12]** let you inspect donor notes,
+   review active directives, clear the context, or append custom notes—handy for
+   ad-hoc audience requests during rehearsal.
 
 ---
 
