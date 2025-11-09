@@ -133,6 +133,8 @@ class DemoStubLLM:
                 priority=0,
             )
 
+        directive_active = bool(directives)
+
         for entry in schedule:
             start = datetime.fromisoformat(entry["start"]).date()
             if start != today:
@@ -159,7 +161,10 @@ class DemoStubLLM:
                     phrase in lower_notes
                     for phrase in ("optional", "can move", "low priority", "deferred")
                 )
-                base_priority = 4 if optional else 2
+                if directive_active:
+                    base_priority = 7 if optional else 5
+                else:
+                    base_priority = 4 if optional else 2
                 add_task(
                     f"Prepare for {entry['title']}",
                     "Gather the required program updates so every donor follow-up stays accurate.",
@@ -284,6 +289,19 @@ class DemoStubLLM:
             )
 
         sorted_tasks = sorted(tasks, key=lambda item: (item["_priority"], item["_order"]))[:max_tasks]
+
+        if directive_active:
+            filtered: list[dict] = []
+            general_allowed = 1
+            general_used = 0
+            for item in sorted_tasks:
+                if item.get("related_donors"):
+                    filtered.append(item)
+                    continue
+                if general_used < general_allowed:
+                    filtered.append(item)
+                    general_used += 1
+            sorted_tasks = filtered
         used_times = {item["time"] for item in sorted_tasks if item.get("time")}
         slot_iter = (slot for slot in slot_order if slot not in used_times)
         for item in sorted_tasks:
@@ -531,7 +549,9 @@ class DemoState:
     def plan_by_event(self, description: str) -> None:
         description = description.strip()
         if not description:
-            print("Please provide an event description (e.g., 'Meet Alicia at Gala 2025').")
+            print(
+                "Please provide an event description (for example, copy the exact title from the to-do list)."
+            )
             return
         donors = self._load_current_donors()
         lowered = description.lower()
@@ -557,7 +577,8 @@ class DemoState:
             return
 
         print(
-            "Could not confidently infer a donor from that event description. Mention their full name to clarify."
+            "Could not confidently infer a donor from that event description. Try pasting the full task name from "
+            "today's to-do list so the donor is unambiguous."
         )
 
     def reflect_on_meeting(self, donor_name: str, meeting_notes: str, missed: list[str]) -> None:

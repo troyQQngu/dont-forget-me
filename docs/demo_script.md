@@ -142,14 +142,16 @@ by the stub LLM.
    Highlight the "Pause outreach" actions that explain why each donor is a poor
    near-term fit.
 
-6. **Plan an event-specific meeting** – Run:
+6. **Plan an event-specific meeting** – Copy the exact task title from the
+   latest to-do list (for example, `Coffee briefing with Alicia Gomez`) and run:
 
    ```
-   assistant> event Meet Alicia at Gala 2025
+   assistant> event Coffee briefing with Alicia Gomez
    ```
 
-   Show how the JSON plan blends Alicia's standing objectives with fresh tips
-   specific to the gala context.
+   Explain that using the precise task title helps the assistant infer the donor
+   immediately. Walk through how the JSON plan blends Alicia's standing
+   objectives with fresh tips tied to that meeting.
 
 7. **Capture a post-meeting reflection** – Trigger a follow-up summary by
    entering:

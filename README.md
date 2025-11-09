@@ -56,7 +56,7 @@ The script restores `data/donors.json` to a baseline state (with Alicia's $100k 
 * The baseline `todo` output shows a packed day pulled from `schedule.json`. Point out which admin items (like the newsletter or finance reconciliation) are marked as low priority so the audience sees them fall away when higher-impact tasks appear.
 * After you add Alicia's pledge reminder manually, the next `todo` run surfaces the mentorship deliverables (background checks, matching roster, progress dashboard) with grounded reasoning.
 * Layer directives with `directives add …` to steer the assistant: focus on LA visits, then "haven't talked in a while" reconnect cues, and finally disqualification prompts. As you stack them, call out how optional admin work disappears to make room for the new relationship-driving tasks.
-* `event Meet Alicia at Gala 2025` produces an event-specific meeting plan, while `reflect Alicia Gomez` prints bulleted follow-up reminders rooted in the recap.
+* `event Coffee briefing with Alicia Gomez` produces an event-specific meeting plan (copy the task title straight from the to-do list), while `reflect Alicia Gomez` prints bulleted follow-up reminders rooted in the recap.
 * Because the script reloads from disk for every command, any manual edit to `data/` is reflected immediately, making the rehearsal feel identical to a live LLM session.
 
 
